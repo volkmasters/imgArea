@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<model package="imgarea" baseClass="xPDOObject" platform="mysql" defaultEngine="MyISAM" phpdoc-package="imgarea"
+	   version="1.1">
+	
+	<object class="imgAreaItem" table="imgarea_items" extends="xPDOSimpleObject">
+		<field key="name" dbtype="varchar" precision="100" phptype="string" null="false" default=""/>
+		<field key="description" dbtype="text" phptype="text" null="true" default=""/>
+		<field key="image" dbtype="varchar" precision="255" phptype="string" null="null" default=""/>
+		<field key="active" dbtype="tinyint" precision="1" phptype="boolean" null="true" default="1"/>
+		<field key="areas" dbtype="text" phptype="text" null="true" default=""/>
+		
+		<index alias="name" name="name" primary="false" unique="false" type="BTREE">
+			<column key="name" length="" collation="A" null="false"/>
+		</index>
+		<index alias="active" name="active" primary="false" unique="false" type="BTREE">
+			<column key="active" length="" collation="A" null="false"/>
+		</index>
+		
+		<composite alias="Area" class="imgAreaItemArea" local="id" foreign="img_id" cardinality="many" owner="local" />
+	</object>
+	
+	
+	<object class="imgAreaItemArea" table="imgarea_item_areas" extends="xPDOSimpleObject">
+		<field key="img_id" dbtype="int" precision="10" attributes="unsigned" phptype="integer" null="false" />
+		<field key="shape" dbtype="varchar" precision="255" phptype="string" null="null" default=""/>
+		<field key="coords" dbtype="text" phptype="text" null="true" default=""/>
+		<field key="alt" dbtype="text" phptype="text" null="true" default=""/>
+		<field key="title" dbtype="text" phptype="text" null="true" default=""/>
+		<field key="target" dbtype="varchar" precision="255" phptype="string" null="null" default=""/>
+		<field key="href" dbtype="varchar" precision="500" phptype="string" null="null" default=""/>
+		<field key="active" dbtype="tinyint" precision="1" phptype="boolean" null="true" default="1"/>
+		<field key="properties" dbtype="text" phptype="json" null="true" />
+		
+		<index alias="img_id" name="img_id" primary="false" unique="false" type="BTREE" >
+			<column key="img_id" length="" collation="A" null="false" />
+		</index>
+		<index alias="shape" name="shape" primary="false" unique="false" type="BTREE">
+			<column key="shape" length="" collation="A" null="false"/>
+		</index>
+		<index alias="target" name="target" primary="false" unique="false" type="BTREE">
+			<column key="target" length="" collation="A" null="false"/>
+		</index>
+		<index alias="href" name="href" primary="false" unique="false" type="BTREE">
+			<column key="href" length="" collation="A" null="false"/>
+		</index>
+		<index alias="active" name="active" primary="false" unique="false" type="BTREE">
+			<column key="active" length="" collation="A" null="false"/>
+		</index>
+		
+		<aggregate alias="Item" class="imgAreaItem" local="img_id" foreign="id" owner="foreign" cardinality="one" />
+	</object>
+	
+</model>

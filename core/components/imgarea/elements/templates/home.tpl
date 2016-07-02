@@ -1,0 +1,1 @@
+<div id="imgarea-panel-home-div"></div>
