@@ -45,11 +45,11 @@
             }
         };
 
-        this.imgResize = function ($img, $wrap) {
-            var curWrapWidth = $wrap.width();
-            var curWrapHeight = $wrap.height();
-            var curImgWidth = $img.width();
-            var curImgHeight = $img.height();
+        this.imgResize = function () {
+            var curWrapWidth = self.config.elements['wrap'].width();
+            var curWrapHeight = self.config.elements['wrap'].height();
+            var curImgWidth = self.config.elements['img'].width();
+            var curImgHeight = self.config.elements['img'].height();
             var width = 0;
             var height = 0;
 
@@ -79,16 +79,16 @@
             }
 
             // Делаем ресайз изображения средствами imageMapster
-            $img.mapster('resize', width, height, 0, function () {
-                var curWrapWidth = $wrap.width();
-                var curWrapHeight = $wrap.height();
-                var curImgWidth = $img.width();
-                var curImgHeight = $img.height();
+            self.config.elements['img'].mapster('resize', width, height, 0, function () {
+                var curWrapWidth = self.config.elements['wrap'].width();
+                var curWrapHeight = self.config.elements['wrap'].height();
+                var curImgWidth = self.config.elements['img'].width();
+                var curImgHeight = self.config.elements['img'].height();
 
                 var marginLeft = self.positionPrepare('x', (curImgWidth - curWrapWidth));
                 var marginTop = self.positionPrepare('y', (curImgHeight - curWrapHeight));
 
-                $img.parent().css({
+                self.config.elements['img'].parent().css({
                     marginLeft: marginLeft,
                     marginTop: marginTop,
                 });
@@ -112,6 +112,7 @@
                 imgBackgroundSize: self.config['imgBackgroundSize'],
                 imgBackgroundPosition: self.config['imgBackgroundPosition'],
                 textBlockShowHide: self.config['textBlockShowHide'],
+                elements: {},
                 selectors: {
                     img: '#img_imgArea' + self.config['id'],
                     map: '#map_imgArea' + self.config['id'],
@@ -139,17 +140,17 @@
                 }
 
                 $(window).on(events.join(' '), function () {
-                    var $img = $(self.config.selectors['img']);
-                    var $wrap = $('<div style="max-width: 100%; height: 100%; overflow: hidden;"></div>')
-                        .insertAfter($img)
-                        .prepend($img);
+                    self.config.elements['img'] = $(self.config.selectors['img']);
+                    self.config.elements['wrap'] = $('<div style="max-width: 100%; height: 100%; overflow: hidden;"></div>')
+                        .insertAfter(self.config.elements['img'])
+                        .prepend(self.config.elements['img']);
 
-                    // var baseWrapWidth = $wrap.width();
-                    // var baseWrapHeight = $wrap.height();
-                    // var baseImgWidth = $img.width();
-                    // var baseImgHeight = $img.height();
+                    // var baseWrapWidth = self.config.elements['wrap'].width();
+                    // var baseWrapHeight = self.config.elements['wrap'].height();
+                    // var baseImgWidth = self.config.elements['img'].width();
+                    // var baseImgHeight = self.config.elements['img'].height();
 
-                    $($img).mapster({
+                    $(self.config.elements['img']).mapster({
                         mapKey: self.config['mapKey'],
                         isSelectable: self.config['isSelectable'],
                         areas: self.config['areas'],
@@ -165,11 +166,11 @@
                         onConfigured: function (success) {
                             if (success) {
                                 if (isCover) {
-                                    self.imgResize($img, $wrap);
+                                    self.imgResize();
 
                                     // При смене размеров окна
                                     window.addEventListener('resize', function () {
-                                        self.imgResize($img, $wrap);
+                                        self.imgResize();
                                     });
                                 }
                             }
