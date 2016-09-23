@@ -1,32 +1,41 @@
 <?php
 
-if (!$imgArea = $modx->getService('imgarea', 'imgArea', $modx->getOption('imgarea_core_path', null, $modx->getOption('core_path').'components/imgarea/').'model/imgarea/', $scriptProperties)) {
+$sp = &$scriptProperties;
+
+if (!$imgArea = $modx->getService('imgarea', 'imgArea', $modx->getOption('imgarea_core_path', null, $modx->getOption('core_path') . 'components/imgarea/') . 'model/imgarea/', $sp)) {
     return 'Could not load imgArea class!';
 }
 
-$id = $modx->getOption('id', $scriptProperties, 0); // id картинки
-$tpl = $modx->getOption('tpl', $scriptProperties, 'tpl.imgArea'); // шаблон вывода изображения
-$tplScripts = $modx->getOption('tplScripts', $scriptProperties, 'tpl.imgArea.scripts'); // шаблон вывода скриптов
+$id = $modx->getOption('id', $sp, 0); // id картинки
+$tpl = $modx->getOption('tpl', $sp, 'tpl.imgArea'); // шаблон вывода изображения
+$tplScripts = $modx->getOption('tplScripts', $sp, 'tpl.imgArea.scripts'); // шаблон вывода скриптов
 
-if ((int) $id <= 0) {
+if ((int)$id <= 0) {
     return;
 }
 
-$hideInactive = (int) $modx->getOption('hideInactive', $scriptProperties, 1); // скрыть неактивные области
-$hideActive = (int) $modx->getOption('hideActive', $scriptProperties, 0); // скрыть активные области
+$hideInactive = (int)$modx->getOption('hideInactive', $sp, 1); // скрыть неактивные области
+$hideActive = (int)$modx->getOption('hideActive', $sp, 0); // скрыть активные области
 
-$easyTooltip = $modx->getOption('easyTooltip', $scriptProperties, 1); // вкл/выкл easyTooltip
-$textBlock = $modx->getOption('textBlock', $scriptProperties, ''); // отображать alt в стороннем блоке. Укажите #id или .class блока
-$textBlockShowHide = $modx->getOption('textBlockShowHide', $scriptProperties, 0); // показать/скрыть textBlock при наведении/отведении мыши на область
+$easyTooltip = $modx->getOption('easyTooltip', $sp, 1); // вкл/выкл easyTooltip
+$textBlock = $modx->getOption('textBlock', $sp, ''); // отображать alt в стороннем блоке. Укажите #id или .class блока
+$textBlockShowHide = $modx->getOption('textBlockShowHide', $sp, 0); // показать/скрыть textBlock при наведении/отведении мыши на область
 
-$bg = $modx->getOption('bg', $scriptProperties, 1); // фон - вкл/выкл
-$bgColor = $modx->getOption('bgColor', $scriptProperties, 'ff0000'); // цвет фона (HEX). Короткая запись не сработает: fff, 000
-$bgOpacity = (float) $modx->getOption('bgOpacity', $scriptProperties, '0.4'); // прозрачность фона (от 0.0 до 1.0)
-$border = $modx->getOption('border', $scriptProperties, 1); // рамка - вкл/выкл
-$borderWidth = (int) $modx->getOption('borderWidth', $scriptProperties, '2'); // толщина рамки (от 0 до 999)
-$borderColor = $modx->getOption('borderColor', $scriptProperties, 'f88017'); // цвет рамки (HEX). Короткая запись не сработает: fff, 000
-$borderOpacity = (float) $modx->getOption('borderOpacity', $scriptProperties, '0.4'); // прозрачность рамки (от 0.0 до 1.0)
-$defaultSelect = $modx->getOption('defaultSelect', $scriptProperties, 0); // выделить по-умолчанию - вкл/выкл
+$bg = $modx->getOption('bg', $sp, 1); // фон - вкл/выкл
+$bgColor = $modx->getOption('bgColor', $sp, 'ff0000'); // цвет фона (HEX). Короткая запись не сработает: fff, 000
+$bgOpacity = (float)$modx->getOption('bgOpacity', $sp, '0.4'); // прозрачность фона (от 0.0 до 1.0)
+$border = $modx->getOption('border', $sp, 1); // рамка - вкл/выкл
+$borderWidth = (int)$modx->getOption('borderWidth', $sp, '2'); // толщина рамки (от 0 до 999)
+$borderColor = $modx->getOption('borderColor', $sp, 'f88017'); // цвет рамки (HEX). Короткая запись не сработает: fff, 000
+$borderOpacity = (float)$modx->getOption('borderOpacity', $sp, '0.4'); // прозрачность рамки (от 0.0 до 1.0)
+$defaultSelect = $modx->getOption('defaultSelect', $sp, 0); // выделить по-умолчанию - вкл/выкл
+
+$imgBackgroundSize = $modx->getOption('imgBackgroundSize', $sp, '');
+$imgBackgroundPosition = $modx->getOption('imgBackgroundPosition', $sp, '');
+if (!empty($imgBackgroundSize) && $imgBackgroundSize != 'cover') {
+    $imgBackgroundSize = '';
+    $imgBackgroundPosition = '';
+}
 
 $hideInactive = ($hideInactive == 'true') ? 1 : $hideInactive;
 $hideInactive = ($hideInactive == '0' || $hideInactive == 'false' || empty($hideInactive)) ? 0 : 1;
@@ -69,12 +78,9 @@ if (is_object($item)) {
     $q->select(array(
         'imgAreaItemArea.*',
     ));
-    $q->where(array_merge(
-        array(
-            'imgAreaItemArea.img_id = '.$chunk_params['id'],
-        ),
-        $area_where
-    ));
+    $q->where(array_merge(array(
+        'imgAreaItemArea.img_id = ' . $chunk_params['id'],
+    ), $area_where));
     $s = $q->prepare(); //print_r($q->toSQL()); die;
     $s->execute();
     $rows = $s->fetchAll(PDO::FETCH_ASSOC);
@@ -89,18 +95,18 @@ if (is_object($item)) {
             $props = $modx->fromJSON($row['properties']);
 
             $opt_area = array();
-            $opt_area['main'][] = 'key: "area'.$row['id'].'"';
+            $opt_area['main'][] = 'key: "area' . $row['id'] . '"';
 
             $areas_html .= '<area ';
-            $areas_html .= 'data-key="area'.$row['id'].'" ';
-            $areas_html .= 'shape="'.$row['shape'].'" ';
-            $areas_html .= 'coords="'.$row['coords'].'" ';
-            $areas_html .= 'alt="'.$row['alt'].'" ';
-            $areas_html .= 'title="'.$row['title'].'" ';
-            $areas_html .= 'data-target="'.$row['target'].'" ';
-            $areas_html .= 'data-href="'.$row['href'].'" ';
+            $areas_html .= 'data-key="area' . $row['id'] . '" ';
+            $areas_html .= 'shape="' . $row['shape'] . '" ';
+            $areas_html .= 'coords="' . $row['coords'] . '" ';
+            $areas_html .= 'alt="' . $row['alt'] . '" ';
+            $areas_html .= 'title="' . $row['title'] . '" ';
+            $areas_html .= 'data-target="' . $row['target'] . '" ';
+            $areas_html .= 'data-href="' . $row['href'] . '" ';
             $areas_html .= 'href="#" ';
-            $areas_html .= !empty($row['active']) ? 'data-active="'.$row['active'].'" ' : '';
+            $areas_html .= !empty($row['active']) ? 'data-active="' . $row['active'] . '" ' : '';
             $areas_html .= '/>';
             $areas_html .= "\r\n";
 
@@ -117,23 +123,23 @@ if (is_object($item)) {
                 foreach ($_props as $cat => $array) {
                     if (!empty($array)) {
                         if (!empty($array['fillColor']) || !empty($array['fillOpacity'])) {
-                            $opt_area[ $cat ][] = 'fill: true';
+                            $opt_area[$cat][] = 'fill: true';
                         } elseif (isset($array['fillOpacity']) && $array['fillOpacity'] == '0') {
-                            $opt_area[ $cat ][] = 'fill: false';
+                            $opt_area[$cat][] = 'fill: false';
                         }
 
                         if (!empty($array['strokeWidth']) || !empty($array['strokeOpacity'])) {
-                            $opt_area[ $cat ][] = 'stroke: true';
+                            $opt_area[$cat][] = 'stroke: true';
                         } elseif ((isset($array['strokeWidth']) && $array['strokeWidth'] == '0') || (isset($array['strokeOpacity']) && $array['strokeOpacity'] == '0')) {
-                            $opt_area[ $cat ][] = 'stroke: false';
+                            $opt_area[$cat][] = 'stroke: false';
                         }
 
                         foreach ($array as $name => $value) {
                             if (mb_strlen($value, 'UTF-8')) {
                                 if ($name == 'staticState') {
-                                    $opt_area[ $cat ][] = $name.': '.(!empty($value) ? 'true' : 'false').'';
+                                    $opt_area[$cat][] = $name . ': ' . (!empty($value) ? 'true' : 'false') . '';
                                 } else {
-                                    $opt_area[ $cat ][] = $name.': "'.$value.'"';
+                                    $opt_area[$cat][] = $name . ': "' . $value . '"';
                                 }
                             }
                         }
@@ -147,17 +153,17 @@ if (is_object($item)) {
 
                     if (!empty($opt_area['select'])) {
                         $area_opts[$i] .= "render_select: {\r\n\t\t";
-                        $area_opts[$i] .= ''.implode(",\r\n\t\t", $opt_area['select']);
+                        $area_opts[$i] .= '' . implode(",\r\n\t\t", $opt_area['select']);
                         $area_opts[$i] .= "\r\n\t},\r\n\t";
                     }
 
                     if (!empty($opt_area['highlight'])) {
                         $area_opts[$i] .= "render_highlight: {\r\n\t\t";
-                        $area_opts[$i] .= ''.implode(",\r\n\t\t", $opt_area['highlight']);
+                        $area_opts[$i] .= '' . implode(",\r\n\t\t", $opt_area['highlight']);
                         $area_opts[$i] .= "\r\n\t},";
                     }
 
-                    $area_opts[$i] .= "\r\n\t".implode(",\r\n\t", $opt_area['main']);
+                    $area_opts[$i] .= "\r\n\t" . implode(",\r\n\t", $opt_area['main']);
                     $area_opts[$i] .= "\r\n}";
                 }
             }
@@ -189,6 +195,9 @@ if (is_object($item)) {
     $chunk_params['borderColor'] = $borderColor;
     $chunk_params['borderOpacity'] = $borderOpacity;
     $chunk_params['defaultSelect'] = $defaultSelect;
+
+    $chunk_params['imgBackgroundSize'] = $imgBackgroundSize;
+    $chunk_params['imgBackgroundPosition'] = $imgBackgroundPosition;
 
     $scripts = $modx->getChunk($tplScripts, array_merge($params, $chunk_params));
     $modx->regClientScript($scripts, true);

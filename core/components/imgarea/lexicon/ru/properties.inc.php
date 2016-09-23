@@ -1,6 +1,6 @@
 <?php
 
-$_lang['imgarea_prop_id'] = 'id картинки';
+$_lang['imgarea_prop_id'] = 'Id картинки';
 $_lang['imgarea_prop_tpl'] = 'Шаблон вывода изображения';
 $_lang['imgarea_prop_tplScripts'] = 'Шаблон вывода скриптов';
 
@@ -21,3 +21,6 @@ $_lang['imgarea_prop_borderColor'] = 'Цвет рамки (HEX). Коротка�
 $_lang['imgarea_prop_borderOpacity'] = 'Прозрачность рамки (от 0.0 до 1.0)';
 
 $_lang['imgarea_prop_defaultSelect'] = 'Выделить по-умолчанию - вкл/выкл';
+
+$_lang['imgarea_prop_imgBackgroundSize'] = 'Похоже на background-size из CSS. Можно указать: cover.';
+$_lang['imgarea_prop_imgBackgroundPosition'] = 'Похоже на background-position из CSS. Работает только при imgBackgroundSize = cover. Указывается по порядку "горизонт вертикаль", например: "right bottom", "25% center" или "200px 50%".';
