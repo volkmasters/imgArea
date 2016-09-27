@@ -19,6 +19,9 @@ $hideInactive = ($hideInactive === 'false' || !$hideInactive) ? false : true;
 $hideActive = $modx->getOption('hideActive', $sp, false); // скрыть активные области
 $hideActive = ($hideActive === 'false' || !$hideActive) ? false : true;
 
+$unpublishedNoLink = $modx->getOption('unpublishedNoLink', $sp, false); // скрыть активные области
+$unpublishedNoLink = ($unpublishedNoLink === 'false' || !$unpublishedNoLink) ? false : true;
+
 $easyTooltip = $modx->getOption('easyTooltip', $sp, 1); // вкл/выкл easyTooltip
 $textBlock = $modx->getOption('textBlock', $sp, ''); // отображать alt в стороннем блоке. Укажите #id или .class блока
 $textBlockShowHide = $modx->getOption('textBlockShowHide', $sp, 0); // показать/скрыть textBlock при наведении/отведении мыши на область
@@ -87,6 +90,20 @@ if (is_object($item)) {
         $i = 0;
         foreach ($rows as $row) {
             $props = $modx->fromJSON($row['properties']);
+
+            // По id ресурса, что указан в ссылке, проверяем, опубликовал ли ресурс
+            if ($unpublishedNoLink && preg_match('/^\[\[\~([0-9]+)/', $row['href'], $matches)) {
+                if (isset($matches[1]) && $resource_id = $matches[1]) {
+                    $q = $modx->newQuery('modResource', array('id' => $resource_id));
+                    $q->select(array('modResource.published'));
+                    if ($q->prepare() && $q->stmt->execute()) {
+                        if (!$ispublished = $q->stmt->fetchColumn()) {
+                            $row['href'] = '#';
+                            $row['alt'] = $row['title'] = $sp['textForUnpublished'];
+                        }
+                    }
+                }
+            }
 
             $opt_area = array();
             $opt_area['main'][] = 'key: "area' . $row['id'] . '"';
