@@ -83,6 +83,15 @@ $tmp = array(
         'value' => '',
     ),
 
+    'unpublishedNoLink' => array(
+        'type' => 'combo-boolean',
+        'value' => 0,
+    ),
+    'textForUnpublished' => array(
+        'type' => 'textfield',
+        'value' => '',
+    ),
+
 );
 
 foreach ($tmp as $k => $v) {

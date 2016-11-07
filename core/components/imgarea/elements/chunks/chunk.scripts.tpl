@@ -33,6 +33,7 @@
         padding: 8px;
         font-size: 90%;
         line-height: 130%;
+        z-index: 99999;
     }
 </style>
 `:else=` `]]

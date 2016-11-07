@@ -1,5 +1,4 @@
 <?php
-
 $sp = &$scriptProperties;
 
 if (!$imgArea = $modx->getService('imgarea', 'imgArea', $modx->getOption('imgarea_core_path', null, $modx->getOption('core_path') . 'components/imgarea/') . 'model/imgarea/', $sp)) {
@@ -14,8 +13,14 @@ if ((int)$id <= 0) {
     return;
 }
 
-$hideInactive = (int)$modx->getOption('hideInactive', $sp, 1); // скрыть неактивные области
-$hideActive = (int)$modx->getOption('hideActive', $sp, 0); // скрыть активные области
+$hideInactive = $modx->getOption('hideInactive', $sp, true); // скрыть неактивные области
+$hideInactive = ($hideInactive === 'false' || !$hideInactive) ? false : true;
+
+$hideActive = $modx->getOption('hideActive', $sp, false); // скрыть активные области
+$hideActive = ($hideActive === 'false' || !$hideActive) ? false : true;
+
+$unpublishedNoLink = $modx->getOption('unpublishedNoLink', $sp, false); // скрыть активные области
+$unpublishedNoLink = ($unpublishedNoLink === 'false' || !$unpublishedNoLink) ? false : true;
 
 $easyTooltip = $modx->getOption('easyTooltip', $sp, 1); // вкл/выкл easyTooltip
 $textBlock = $modx->getOption('textBlock', $sp, ''); // отображать alt в стороннем блоке. Укажите #id или .class блока
@@ -37,11 +42,6 @@ if (!empty($imgBackgroundSize) && $imgBackgroundSize != 'cover') {
     $imgBackgroundPosition = '';
 }
 
-$hideInactive = ($hideInactive == 'true') ? 1 : $hideInactive;
-$hideInactive = ($hideInactive == '0' || $hideInactive == 'false' || empty($hideInactive)) ? 0 : 1;
-$hideActive = ($hideActive == 'true') ? 1 : $hideActive;
-$hideActive = ($hideActive == '0' || $hideActive == 'false' || empty($hideActive)) ? 0 : 1;
-
 $bg = ($bg == 'true') ? 1 : $bg;
 $bg = ($bg == '0' || $bg == 'false' || empty($bg)) ? 'false' : 'true';
 $border = ($border == 'true') ? 1 : $border;
@@ -59,19 +59,16 @@ $item = $modx->getObject('imgAreaItem', $id);
 if (is_object($item)) {
     $params['jsUrl'] = $imgArea->config['jsUrl'];
     $chunk_params = $item->toArray();
+    $area_where = array();
 
-    $area_where = '';
-
-    if (!$hideInactive) {
-        $area_where[0] .= '( imgAreaItemArea.active = "0" ';
-    } else {
-        $area_where[0] .= '( imgAreaItemArea.active != "0" ';
-    }
-
-    if (!$hideActive) {
-        $area_where[0] .= 'OR imgAreaItemArea.active = "1" )';
-    } else {
-        $area_where[0] .= 'OR imgAreaItemArea.active != "1" )';
+    if (!$hideInactive && !$hideActive) {
+        $area_where[0] = '(imgAreaItemArea.active = "0" OR imgAreaItemArea.active = "1")';
+    } elseif ($hideInactive && !$hideActive) {
+        $area_where[0] = '(imgAreaItemArea.active != "0" AND imgAreaItemArea.active = "1")';
+    } elseif ($hideInactive && $hideActive) {
+        $area_where[0] = '(imgAreaItemArea.active != "0" AND imgAreaItemArea.active != "1")';
+    } elseif (!$hideInactive && $hideActive) {
+        $area_where[0] = '(imgAreaItemArea.active = "0" AND imgAreaItemArea.active != "1")';
     }
 
     $q = $modx->newQuery('imgAreaItemArea');
@@ -93,6 +90,20 @@ if (is_object($item)) {
         $i = 0;
         foreach ($rows as $row) {
             $props = $modx->fromJSON($row['properties']);
+
+            // По id ресурса, что указан в ссылке, проверяем, опубликовал ли ресурс
+            if ($unpublishedNoLink && preg_match('/^\[\[\~([0-9]+)/', $row['href'], $matches)) {
+                if (isset($matches[1]) && $resource_id = $matches[1]) {
+                    $q = $modx->newQuery('modResource', array('id' => $resource_id));
+                    $q->select(array('modResource.published'));
+                    if ($q->prepare() && $q->stmt->execute()) {
+                        if (!$ispublished = $q->stmt->fetchColumn()) {
+                            $row['href'] = '#';
+                            $row['alt'] = $row['title'] = $sp['textForUnpublished'];
+                        }
+                    }
+                }
+            }
 
             $opt_area = array();
             $opt_area['main'][] = 'key: "area' . $row['id'] . '"';
